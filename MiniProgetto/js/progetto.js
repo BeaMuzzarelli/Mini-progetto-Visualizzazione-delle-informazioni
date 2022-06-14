@@ -2,51 +2,48 @@ var updateTime = 2500;
 var counter = 1;
 var keyPressed = false;
 var svg = d3.select("body").append("svg").attr("width", 1500).attr("height", 700);
+var globalDataSet;
 
 var scaleX = d3.scaleLinear()
-scaleX.domain([0,600])
-scaleX.range([0,1500])
 
 var scaleY = d3.scaleLinear()
-scaleY.domain([0,600])
-scaleY.range([0,600])
 
-function goBreathX(dataSet){
+function goBreathX(){
 	svg.selectAll("image").transition().duration(updateTime).attr("y", function(d){ return 0;});
-	svg.selectAll("image").data(dataSet).transition().delay(updateTime).duration(updateTime).attr("y", d => this.scaleY(d.x));
+	svg.selectAll("image").data(globalDataSet).transition().delay(updateTime).duration(updateTime).attr("y", d => this.scaleY(d.x));
 	counter = 1;
 }
 
-function goBreathY(dataSet){
+function goBreathY(){
 	svg.selectAll("image").transition().duration(updateTime).attr("y", function(d){ return 0;});
-	svg.selectAll("image").data(dataSet).transition().delay(updateTime).duration(updateTime).attr("y", d => this.scaleY(d.y));
+	svg.selectAll("image").data(globalDataSet).transition().delay(updateTime).duration(updateTime).attr("y", d => this.scaleY(d.y));
 	counter = 2;
 }
 
-function goBreathZ(dataSet){
+function goBreathZ(){
 	svg.selectAll("image").transition().duration(updateTime).attr("y", function(d){ return 0;});
-	svg.selectAll("image").data(dataSet).transition().delay(updateTime).duration(updateTime).attr("y", d => this.scaleY(d.z));
+	svg.selectAll("image").data(globalDataSet).transition().delay(updateTime).duration(updateTime).attr("y", d => this.scaleY(d.z));
 	counter = 0;
 }
 
-function updateDrawX(dataSet){
-	svg.selectAll("image").data(dataSet).transition().duration(updateTime).attr("y", d => this.scaleY(d.x));
+function updateDrawX(){
+	svg.selectAll("image").data(globalDataSet).transition().duration(updateTime).attr("y", d => this.scaleY(d.x));
 	counter = 1;
 }
 
-function updateDrawY(dataSet){
-	svg.selectAll("image").data(dataSet).transition().duration(updateTime).attr("y", d => this.scaleY(d.y));
+function updateDrawY(){
+	svg.selectAll("image").data(globalDataSet).transition().duration(updateTime).attr("y", d => this.scaleY(d.y));
 	counter = 2;
 }
 
-function updateDrawZ(dataSet){
-	svg.selectAll("image").data(dataSet).transition().duration(updateTime).attr("y", d => this.scaleY(d.z));
+function updateDrawZ(){
+	svg.selectAll("image").data(globalDataSet).transition().duration(updateTime).attr("y", d => this.scaleY(d.z));
 	counter = 0;
 }
 
-function drawAll(dataSet){
+function drawAll(){
 	svg.selectAll("image")
-		.data(dataSet) 	
+		.data(globalDataSet) 	
 		.enter()       	
 		.append("svg:image")
 		.attr("x", function(d, i) { return scaleX(i * 50 + 50) })
@@ -56,29 +53,29 @@ function drawAll(dataSet){
 		.attr("xlink:href", "image/whale.png");
 }
 
-function updateDraw(dataSet){
-	var elements = svg.selectAll("image").data(dataSet);
+function updateDraw(){
+	var elements = svg.selectAll("image").data(globalDataSet);
 	elements.exit().remove();
 	switch(counter) {
 		case 0: {
 			if(keyPressed)
-				goBreathX(dataSet);
+				goBreathX();
 			else
-				updateDrawX(dataSet);
+				updateDrawX();
 			break;
 		}
 		case 1: {
 			if(keyPressed)
-				goBreathY(dataSet);
+				goBreathY();
 			else
-				updateDrawY(dataSet);
+				updateDrawY();
 			break;
 		}
 		case 2: {
 			if(keyPressed)
-				goBreathZ(dataSet);
+				goBreathZ();
 			else
-				updateDrawZ(dataSet);
+				updateDrawZ();
 			break;
 		}
 	}
@@ -86,7 +83,16 @@ function updateDraw(dataSet){
 
 d3.json("data/dati.json")
 	.then(function(dataSet) {
-		drawAll(dataSet);
+		globalDataSet = dataSet;
+		scaleX.domain([0,600])
+		scaleX.range([0,1500])
+		scaleY.domain([0, d3.max([
+			d3.max(dataSet, function(d) {return d.x}),
+			d3.max(dataSet, function(d) {return d.y}),
+			d3.max(dataSet, function(d) {return d.z})])
+			])
+		scaleY.range([0,600])
+		drawAll();
 		document.addEventListener("keydown", function(e){
 			if(e.key == "r")
 				keyPressed = true;
